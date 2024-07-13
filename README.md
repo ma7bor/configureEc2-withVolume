@@ -43,40 +43,49 @@ Define the following variables in your `variables.tf` file:
 ```hcl
 variable "AWS_REGION" {
   description = "The AWS region to deploy resources to"
-  default     = "us-west-2"
+  default     = "your value"
 }
 
 variable "AWS_ACCESS_KEY" {
   description = "The AWS access key"
   type        = string
+  default     = "your value"
+
 }
 
 variable "AWS_SECRET_KEY" {
   description = "The AWS secret key"
   type        = string
-  sensitive   = true
-}
-
-variable "source_bucket_name" {
-  description = "Name of the source S3 bucket"
-  type        = string
-}
-
-variable "destination_bucket_name" {
-  description = "Name of the destination S3 bucket"
-  type        = string
-}
-
-variable "file_name" {
-  description = "Name of the file to be uploaded and copied"
-  type        = string
-}
-
-variable "local_file_path" {
-  description = "Local path of the file to be uploaded"
-  type        = string
+  default     = "your value"
 }
 ```
+## Backend Configuration
+# What is a Backend?
+  In Terraform, a backend determines how state is loaded and how operations like apply are executed. When you use a backend, you can store your state file in a remote, shared location, which enables collaboration and keeps the state file secure.
+
+# Why Use an S3 Backend?
+  Using an S3 backend to store your Terraform state file offers several benefits:
+
+Remote State Storage: Keeps the state file in a central location, accessible by multiple team members.
+        - State Locking: Prevents concurrent operations, reducing the risk of state corruption.
+        - Versioning: Allows you to maintain a history of state changes, making it easier to rollback if necessary.
+        - Encryption: Ensures that your state file is securely stored.
+
+# Backend Configuration in This Project
+This project uses an S3 bucket as the backend for storing the Terraform state file. The backend configuration is specified in the main.tf file:
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket = "s3-backend"
+    key    = "terraform/state.tfstate"
+    region = "us-west-1"
+  }
+}
+```
+    - bucket: The name of the S3 bucket where the state file will be stored.
+    - key: The path within the bucket where the state file will be stored.
+    - region: The AWS region where the S3 bucket is located.
 
 ## Terraform Configuration
 
@@ -192,6 +201,19 @@ output "security_group_id" {
 
    After applying, Terraform will output the IDs of the created resources.
 
+## Checking the Terraform State File
+  The Terraform state file is stored in the S3 bucket specified in the backend configuration. To check the contents of the ./terraform folder in the bucket that contains the .state file, you can use the AWS Management Console or the AWS CLI.
+
+# Using AWS Management Console
+  - Navigate to the S3 service.
+  - Find and open the s3-backend bucket.
+  - Browse to the terraform/ folder.
+  You should see the state.tfstate file.
+
+# Using AWS CLI
+  List the contents of the S3 bucket: aws s3 ls s3://s3-backend/terraform/
+  You should see the state.tfstate file in the output.
+  
 ## Cleanup
 
 To destroy the created infrastructure, run:
